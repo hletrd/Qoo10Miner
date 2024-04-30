@@ -14,13 +14,9 @@ $ pip install -r requirements.txt
 $ brew cask install chromedriver
 ```
 #### Linux
-```
-[Download chromedriver](https://googlechromelabs.github.io/chrome-for-testing/) and put in into PATH.
-```
+* [Download chromedriver](https://googlechromelabs.github.io/chrome-for-testing/) and put it into PATH.
 #### Windows
-```
-[Download chromedriver](https://googlechromelabs.github.io/chrome-for-testing/) and put in into PATH.
-```
+* [Download chromedriver](https://googlechromelabs.github.io/chrome-for-testing/) and put it into PATH.
 
 ### Usage
 

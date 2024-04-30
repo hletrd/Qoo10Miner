@@ -1,0 +1,1 @@
+from .qoo10 import Qoo10

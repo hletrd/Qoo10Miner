@@ -35,7 +35,7 @@ from . import locales
 from . import loginmethods
 
 class Qoo10:
-  def __init__(self, datadir: str, locale: str, executable_path: str=None, install:bool =False, browser: str='firefox', load_saved: bool=True, headless: bool=False, logging: bool=True) -> None:
+  def __init__(self, datadir: str, locale: str, executable_path: str=None, install:bool =False, browser: str='chrome', load_saved: bool=True, headless: bool=False, logging: bool=True) -> None:
     if not os.path.exists(datadir):
       os.mkdir(datadir)
     self.browser = browser
@@ -155,7 +155,7 @@ class Qoo10:
     except:
       pass
 
-  def login(self, loginmethod: str='', username: str='', password: str='', random_delay: bool=True) -> None:
+  def login(self, loginmethod: str=loginmethods.login_qoo10, username: str='', password: str='', random_delay: bool=True) -> None:
     self.close_popup()
     menu_icon = self.driver.find_element(By.CSS_SELECTOR, ".header__icon--menu")
     menu_icon.click()

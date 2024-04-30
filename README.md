@@ -1,5 +1,7 @@
 ## Qoo10 miner
 
+![Demo](demo.gif)
+
 * Automated brandmon mining from Qoo10
 
 ### Prerequisites

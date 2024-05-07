@@ -154,6 +154,13 @@ class Qoo10:
       self.log('[click] close app download popup')
     except:
       pass
+    try:
+      wish = self.driver.find_element(By.CLASS_NAME, "wishplus-notice__button")
+      closebutton = wish.find_element(By.TAG_NAME, "button")
+      closebutton.click()
+      self.log('[click] close wish popup')
+    except:
+      pass
 
   def login(self, loginmethod: str=loginmethods.login_qoo10, username: str='', password: str='', random_delay: bool=True) -> None:
     self.close_popup()

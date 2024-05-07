@@ -164,22 +164,40 @@ class Qoo10:
 
   def login(self, loginmethod: str=loginmethods.login_qoo10, username: str='', password: str='', random_delay: bool=True) -> None:
     self.close_popup()
-    bottom_bar = self.driver.find_element(By.ID, "common_bottom_tab_bar")
-    mypage = bottom_bar.find_elements(By.TAG_NAME, "a")[4]
-    mypage.click()
 
-    self.log('[click] mypage')
+    login_btn = None
+    try:
+      menu_icon = self.driver.find_element(By.CSS_SELECTOR, ".header__icon--menu")
+      menu_icon.click()
 
-    if random_delay == True:
-      time.sleep(random.uniform(0.5, 2))
+      self.log('[click] menu')
 
-    buttons = self.driver.find_element(By.ID, "aspnetForm").find_elements(By.TAG_NAME, "a")
-    print(buttons)
-    for button in buttons:
-      if button.get_attribute('href') != None and 'login' in button.get_attribute('href').lower():
-        login_btn = button
-        break
+      if random_delay == True:
+        time.sleep(random.uniform(0.5, 2))
 
+      login_btn = self.driver.find_element(By.ID, "nav_login_view").find_element(By.CLASS_NAME, "name")
+
+    except:
+      bottom_bar = self.driver.find_element(By.ID, "common_bottom_tab_bar")
+      mypage = bottom_bar.find_elements(By.TAG_NAME, "a")[4]
+      mypage.click()
+
+      self.log('[click] mypage')
+
+      if random_delay == True:
+        time.sleep(random.uniform(0.5, 2))
+
+      buttons = self.driver.find_element(By.ID, "aspnetForm").find_elements(By.TAG_NAME, "a")
+      for button in buttons:
+        print(button.get_attribute('href'))
+        if button.get_attribute('href') != None and 'login' in button.get_attribute('href').lower():
+          login_btn = button
+          break
+
+    if login_btn == None:
+      self.log('[alert] already logged in')
+      return
+    
     login_btn.click()
     self.log('[click] login button')
 

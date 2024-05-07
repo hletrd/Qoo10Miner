@@ -164,76 +164,81 @@ class Qoo10:
 
   def login(self, loginmethod: str=loginmethods.login_qoo10, username: str='', password: str='', random_delay: bool=True) -> None:
     self.close_popup()
-    menu_icon = self.driver.find_element(By.CSS_SELECTOR, ".header__icon--menu")
-    menu_icon.click()
+    bottom_bar = self.driver.find_element(By.ID, "common_bottom_tab_bar")
+    mypage = bottom_bar.find_elements(By.TAG_NAME, "a")[4]
+    mypage.click()
 
-    self.log('[click] menu')
+    self.log('[click] mypage')
 
     if random_delay == True:
       time.sleep(random.uniform(0.5, 2))
 
-    login_btn = self.driver.find_element(By.ID, "nav_login_view").find_element(By.CLASS_NAME, "name")
+    buttons = self.driver.find_element(By.ID, "aspnetForm").find_elements(By.TAG_NAME, "a")
+    print(buttons)
+    for button in buttons:
+      if button.get_attribute('href') != None and 'login' in button.get_attribute('href').lower():
+        login_btn = button
+        break
 
-    if 'Login' in login_btn.get_attribute('href'):
-      login_btn.click()
-      self.log('[click] login button')
+    login_btn.click()
+    self.log('[click] login button')
+
+    if random_delay == True:
+      time.sleep(random.uniform(0.5, 2))
+
+    if loginmethod == loginmethods.login_qoo10:
+      div = self.driver.find_element(By.CLASS_NAME, "login_type")
+      login_qoo10 = div.find_element(By.TAG_NAME, "a")
+      login_qoo10.click()
 
       if random_delay == True:
-        time.sleep(random.uniform(0.5, 2))
+        time.sleep(random.uniform(0.5, 1.5))
 
-      if loginmethod == loginmethods.login_qoo10:
-        div = self.driver.find_element(By.CLASS_NAME, "login_type")
-        login_qoo10 = div.find_element(By.TAG_NAME, "a")
-        login_qoo10.click()
+      self.driver.execute_script("document.getElementById('login_id').value='{}'".format(username))
+      self.driver.execute_script("document.getElementById('id_passwd').value='{}'".format(password))
+      self.render_msg('Please log in.')
 
-        if random_delay == True:
-          time.sleep(random.uniform(0.5, 1.5))
+    elif loginmethod == loginmethods.login_facebook:
+      div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
+      login = div.find_elements(By.TAG_NAME, "a")
+      login[0].click()
+    elif loginmethod == loginmethods.login_google:
+      div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
+      login = div.find_elements(By.TAG_NAME, "a")
+      login[1].click()
+    elif loginmethod == loginmethods.login_line:
+      div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
+      login = div.find_elements(By.TAG_NAME, "a")
+      login[2].click()
+    elif loginmethod == loginmethods.login_kakaotalk:
+      div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
+      login = div.find_elements(By.TAG_NAME, "a")
+      login[3].click()
+    elif loginmethod == loginmethods.login_apple:
+      div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
+      login = div.find_elements(By.TAG_NAME, "a")
+      login[4].click()
+    else:
+      self.render_msg('Please log in.')
 
-        self.driver.execute_script("document.getElementById('login_id').value='{}'".format(username))
-        self.driver.execute_script("document.getElementById('id_passwd').value='{}'".format(password))
-        self.render_msg('Please log in.')
-
-      elif loginmethod == loginmethods.login_facebook:
-        div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
-        login = div.find_elements(By.TAG_NAME, "a")
-        login[0].click()
-      elif loginmethod == loginmethods.login_google:
-        div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
-        login = div.find_elements(By.TAG_NAME, "a")
-        login[1].click()
-      elif loginmethod == loginmethods.login_line:
-        div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
-        login = div.find_elements(By.TAG_NAME, "a")
-        login[2].click()
-      elif loginmethod == loginmethods.login_kakaotalk:
-        div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
-        login = div.find_elements(By.TAG_NAME, "a")
-        login[3].click()
-      elif loginmethod == loginmethods.login_apple:
-        div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
-        login = div.find_elements(By.TAG_NAME, "a")
-        login[4].click()
-      else:
-        self.render_msg('Please log in.')
-
-      self.log('[alert] Waiting for login', error=True)
-      while True:
-        try:
-          login_btn = self.driver.find_element(By.CLASS_NAME, "footer-conts__btn").find_elements(By.TAG_NAME, "button")[1]
-          if 'Logout' in login_btn.get_attribute('onclick'):
-            break
-        except:
-          pass
-        try:
-          user_info = self.driver.find_element(By.CLASS_NAME, "qbx_usr_inf")
+    self.log('[alert] Waiting for login', error=True)
+    while True:
+      try:
+        login_btn = self.driver.find_element(By.CLASS_NAME, "footer-conts__btn").find_elements(By.TAG_NAME, "button")[1]
+        if 'Logout' in login_btn.get_attribute('onclick'):
           break
-        except:
-          pass
-        time.sleep(0.3)
-      self.log('[alert] Login completed', error=True)
-      if random_delay == True:
-        time.sleep(random.uniform(0.5, 2))
-      self.close_popup()
+      except:
+        pass
+      try:
+        user_info = self.driver.find_element(By.CLASS_NAME, "qbx_usr_inf")
+        break
+      except:
+        pass
+      time.sleep(0.3)
+    self.log('[alert] Login completed', error=True)
+    if random_delay == True:
+      time.sleep(random.uniform(0.5, 2))
+    self.close_popup()
 
     try:
       home_btn = self.driver.find_element(By.ID, 'common_bottom_tab_bar').find_element(By.TAG_NAME, 'a')

@@ -176,8 +176,7 @@ class Qoo10:
         time.sleep(random.uniform(0.5, 2))
 
       login_btn = self.driver.find_element(By.ID, "nav_login_view").find_element(By.CLASS_NAME, "name")
-
-    except:
+    except NoSuchElementException:
       bottom_bar = self.driver.find_element(By.ID, "common_bottom_tab_bar")
       mypage = bottom_bar.find_elements(By.TAG_NAME, "a")[4]
       mypage.click()
@@ -189,7 +188,6 @@ class Qoo10:
 
       buttons = self.driver.find_element(By.ID, "aspnetForm").find_elements(By.TAG_NAME, "a")
       for button in buttons:
-        print(button.get_attribute('href'))
         if button.get_attribute('href') != None and 'login' in button.get_attribute('href').lower():
           login_btn = button
           break
@@ -198,8 +196,12 @@ class Qoo10:
       self.log('[alert] already logged in')
       return
     
-    login_btn.click()
-    self.log('[click] login button')
+    try:
+      login_btn.click()
+      self.log('[click] login button')
+    except NoSuchElementException:
+      self.log('[alert] already logged in')
+      return
 
     if random_delay == True:
       time.sleep(random.uniform(0.5, 2))

@@ -176,7 +176,10 @@ class Qoo10:
         time.sleep(random.uniform(0.5, 2))
 
       login_btn = self.driver.find_element(By.ID, "nav_login_view").find_element(By.CLASS_NAME, "name")
-    except NoSuchElementException:
+      if 'login' not in login_btn.get_attribute('innerHTML').lower():
+        self.log('[alert] already logged in')
+        return
+    except (NoSuchElementException, ElementNotInteractableException):
       bottom_bar = self.driver.find_element(By.ID, "common_bottom_tab_bar")
       mypage = bottom_bar.find_elements(By.TAG_NAME, "a")[4]
       mypage.click()
@@ -199,7 +202,7 @@ class Qoo10:
     try:
       login_btn.click()
       self.log('[click] login button')
-    except NoSuchElementException:
+    except (NoSuchElementException, ElementNotInteractableException):
       self.log('[alert] already logged in')
       return
 

@@ -8,22 +8,22 @@
 
 ### Prerequisites
 
-* Selenium
+#### Selenium
 ```
 $ pip install -r requirements.txt
 ```
 
-* ChromeDriver
-  * macOS
+#### ChromeDriver
+* macOS
 ```
 $ brew cask install chromedriver
 ```
 
-  * Linux
-    * [Download chromedriver](https://googlechromelabs.github.io/chrome-for-testing/) and place in into PATH.
+* Linux
+  * [Download chromedriver](https://googlechromelabs.github.io/chrome-for-testing/) and place in into PATH.
 
-  * Windows
-    * [Download chromedriver](https://googlechromelabs.github.io/chrome-for-testing/) and place in into PATH.
+* Windows
+  * [Download chromedriver](https://googlechromelabs.github.io/chrome-for-testing/) and place in into PATH.
 
 ### Usage
 

@@ -25,6 +25,12 @@ $ brew cask install chromedriver
 * Windows
   * [Download chromedriver](https://googlechromelabs.github.io/chrome-for-testing/) and place in into PATH.
 
+### Installation
+
+```bash
+$ python3 setup.py install
+```
+
 ### Usage
 
 * Start with importing Qoo10 module.

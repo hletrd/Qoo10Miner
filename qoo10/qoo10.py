@@ -263,16 +263,7 @@ class Qoo10:
       time.sleep(random.uniform(0.5, 2))
     self.close_popup()
 
-    try:
-      home_btn = self.driver.find_element(By.ID, 'common_bottom_tab_bar').find_element(By.TAG_NAME, 'a')
-      if 'icon-home' in home_btn.get_attribute('innerHTML'):
-        home_btn.click()
-      else:
-        raise NoSuchElementException
-      self.log('[click] main page')
-    except (ElementClickInterceptedException, NoSuchElementException):
-      self.log('[error] cannot click main page link', error=True)
-      self.driver.get('https://' + self.locale)
+    self.go_home()
       
   #Brandmon collector
   def collect_brandmon(self, random_delay: bool=True) -> tuple[int, int]:
@@ -286,6 +277,7 @@ class Qoo10:
         WebDriverWait(self.driver, timeout).until(shopping_tweets_present)
       except TimeoutException:
         self.log('[error] timeout (shopping tweets link not found)', error=True)
+        return brandmoncnt, mameqcnt
 
       self.close_popup()
 
@@ -320,9 +312,7 @@ class Qoo10:
             self.driver.execute_script("closeLayer();")
           except:
             pass
-          home_btn = self.driver.find_elements(By.CLASS_NAME, 'header-logo')[0].find_element(By.TAG_NAME, 'a')
-          home_btn.click()
-          self.log('[click] main page')
+          self.go_home()
           self.log('[message] waiting...')
           if random_delay == True:
             time.sleep(random.uniform(1.5, 4))
@@ -628,12 +618,7 @@ class Qoo10:
     except:
       pass
     
-    try:
-      home_btn = self.driver.find_elements(By.CLASS_NAME, 'header-logo')[0].find_element(By.TAG_NAME, 'a')
-      home_btn.click()
-      self.log('[click] main page')
-    except:
-      self.log('[error] main page not found')
+    self.go_home()
 
     self.save_collected('mameq', collected_mameq)
     try:
@@ -641,6 +626,18 @@ class Qoo10:
     except:
       pass
     return mameq_cnt
+  
+  def go_home(self) -> None:
+    try:
+      home_btn = self.driver.find_element(By.ID, 'common_bottom_tab_bar').find_element(By.TAG_NAME, 'a')
+      if 'home' in home_btn.get_attribute('innerHTML'):
+        home_btn.click()
+      else:
+        raise NoSuchElementException
+      self.log('[click] main page')
+    except (ElementClickInterceptedException, NoSuchElementException):
+      self.log('[error] cannot click main page link', error=True)
+      self.driver.get('https://' + self.locale)
 
   def attend(self, random_delay: bool=True) -> None:
     action = ActionChains(self.driver)
@@ -662,10 +659,10 @@ class Qoo10:
         break
     try:
       self.driver.switch_to.frame(self.driver.find_element(By.ID, "RouletteQMobile"))
-      #stamp = self.driver.find_element(By.ID, "td_today")
+      stamp = self.driver.find_element(By.ID, "td_today")
       self.log('[click] stamp found')
       self.driver.execute_script("Attendance.apply();")
-      #stamp.click()
+      stamp.click()
       self.log('[click] stamp')
     except NoSuchElementException:
       self.log('[error] attendance not available', error=True)
@@ -681,8 +678,9 @@ class Qoo10:
         time.sleep(random.uniform(1, 3))
     except NoSuchElementException:
       try:
+        self.driver.switch_to.frame(self.driver.find_element(By.ID, "RouletteQMobile"))
         self.driver.switch_to.frame(self.driver.find_element(By.ID, "roulette_board"))
-        play = self.driver.find_element(By.ID, "btn_start")
+        play = self.driver.find_element(By.TAG_NAME, "button")
         play.click()
         self.log('[click] roulette play')
         if random_delay == True:

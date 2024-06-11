@@ -12,6 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementClickInterceptedException, ElementNotInteractableException, StaleElementReferenceException
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
 
 import time
 import os
@@ -80,8 +81,7 @@ class Qoo10:
       else:
         service = None
       self.driver = webdriver.Chrome(service=service, options=self.opts)
-    self.driver.set_window_size(390, 780)
-    #self.driver.set_window_size(500, 1000)
+    self.driver.set_window_size(390, 844)
     self.driver.get("https://" + url)
     try:
       mobileweb = self.driver.find_element(By.ID, "btn_download_app_close")
@@ -405,6 +405,102 @@ class Qoo10:
       import traceback
       traceback.print_exc()
       return brandmoncnt, mameqcnt
+    
+  def catch_mameq(self, random_delay: bool=True) -> int:
+    mameqcnt = 0
+    action = ActionChains(self.driver)
+    links = self.driver.find_elements(By.CLASS_NAME, "swp_slide")
+    if 'wish.com' not in self.driver.current_url:
+      action.drag_and_drop_by_offset(links[4], -240, 0).perform()
+      if random_delay == True:
+        time.sleep(random.uniform(0.3, 0.8))
+      action.drag_and_drop_by_offset(links[8], -240, 0).perform()
+      if random_delay == True:
+        time.sleep(random.uniform(0.3, 0.8))
+    for i in links:
+      a = i.find_element(By.TAG_NAME, "a")
+      href = a.get_attribute('href')
+      if 'MameGo' in href:
+        a.click()
+        self.log('[click] mamego')
+        if random_delay == True:
+          time.sleep(random.uniform(1, 3))
+        break
+    while True:
+      try:
+        WebDriverWait(self.driver, timeout).until(EC.presence_of_element_located((By.CLASS_NAME, 'tmp_mmrd')))
+      except TimeoutError:
+        self.log('[error] mamego timeout', error=True)
+        return 0
+      mamego_div = self.driver.find_element(By.CLASS_NAME, 'tmp_mmrd')
+      mamegos = mamego_div.find_elements(By.TAG_NAME, 'li')
+      if len(mamegos) == 0:
+        self.log('[error] mamego not found', error=True)
+        break
+      #scroll down a bit
+      self.driver.execute_script("window.scrollBy(0, 300);")
+      if random_delay == True:
+        time.sleep(random.uniform(0.3, 0.8))
+      if_captured = False
+      try:
+        for mamego in mamegos:
+          try:
+            captured = mamego.find_element(By.CLASS_NAME, 'cptrd')
+            if captured:
+              #already captured mameq in the list
+              print('[message] captured mameq in the list')
+              continue
+          except NoSuchElementException:
+            pass
+          except StaleElementReferenceException:
+            break
+          a = mamego.find_element(By.TAG_NAME, 'a')
+          a.click()
+          self.log('[click] mamego')
+          if random_delay == True:
+            time.sleep(random.uniform(1, 3))
+          WebDriverWait(self.driver, timeout).until(EC.presence_of_element_located((By.CLASS_NAME, 'coinbn-mamego')))
+          text = self.driver.find_element(By.CLASS_NAME, 'coinbn-mamego__text')
+          if 'Captured' in text.get_attribute('innerHTML'):
+            #already captured mameq in the page
+            print('[message] captured mameq in the page')
+            self.driver.back()
+            continue
+          catch_div = self.driver.find_element(By.CLASS_NAME, 'coinbn-mamego')
+          catch_btn = catch_div.find_element(By.TAG_NAME, 'a')
+          time.sleep(5)
+          catch_btn.click()
+          WebDriverWait(self.driver, timeout).until(EC.presence_of_element_located((By.ID, 'canvas')))
+          random_x = random.randint(0, 10)
+          random_y = random.randint(0, 10)
+          random_x_offset = random.randint(0, 10)
+          random_y_offset = random.randint(0, 10)
+          viewport_width = self.driver.execute_script("return window.innerWidth")
+          viewport_height = self.driver.execute_script("return window.innerHeight")
+          action_builder = ActionBuilder(self.driver)
+          action_builder.pointer_action.move_to_location(viewport_width / 2 + random_x, viewport_height - 80 + random_y).click_and_hold().move_to_location(viewport_width / 2 + random_x + random_x_offset, viewport_height - 80 + random_y + random_y_offset - 200).release()
+          action_builder.perform()
+          print('[message] throw mameball')
+          time.sleep(5)
+          if random_delay == True:
+            time.sleep(random.uniform(1, 3))
+          if_captured = True
+          self.driver.back()
+          try:
+            WebDriverWait(self.driver, timeout).until(EC.presence_of_element_located((By.CLASS_NAME, 'tmp_mmrd')))
+            print('[message] captured')
+            mameqcnt += 1
+          except TimeoutException:
+            print('[message] failed to capture')
+            self.driver.back()
+          break
+        if if_captured == False:
+          self.log('[message] catched all mameqs. close')
+          break
+      except TimeoutError:
+        self.log('[error] mamego timeout', error=True)
+        break
+    return mameqcnt
 
   #qlounge
   def collect_mameq(self, random_delay: bool=True) -> int:
@@ -635,24 +731,31 @@ class Qoo10:
       else:
         raise NoSuchElementException
       self.log('[click] main page')
-    except (ElementClickInterceptedException, NoSuchElementException):
+    except (ElementClickInterceptedException, NoSuchElementException, ElementNotInteractableException):
       self.log('[error] cannot click main page link', error=True)
       self.driver.get('https://' + self.locale)
 
   def attend(self, random_delay: bool=True) -> None:
     action = ActionChains(self.driver)
     links = self.driver.find_elements(By.CLASS_NAME, "swp_slide")
-    action.drag_and_drop_by_offset(links[4], -240, 0).perform()
-    if random_delay == True:
-      time.sleep(random.uniform(0.3, 0.8))
-    action.drag_and_drop_by_offset(links[8], -240, 0).perform()
-    if random_delay == True:
-      time.sleep(random.uniform(0.3, 0.8))
+    if 'wish.com' not in self.driver.current_url:
+      action.drag_and_drop_by_offset(links[4], -240, 0).perform()
+      if random_delay == True:
+        time.sleep(random.uniform(0.3, 0.8))
+      action.drag_and_drop_by_offset(links[8], -240, 0).perform()
+      if random_delay == True:
+        time.sleep(random.uniform(0.3, 0.8))
     for i in links:
       a = i.find_element(By.TAG_NAME, "a")
       href = a.get_attribute('href')
       if 'Funzone' in href:
-        a.click()
+        try:
+          a.click()
+        except ElementClickInterceptedException:
+          banner = self.driver.find_element(By.ID, 'aside_coin_banner')
+          close = banner.find_element(By.CLASS_NAME, 'btn_tgl')
+          close.click()
+          a.click()
         self.log('[click] Q lounge')
         if random_delay == True:
           time.sleep(random.uniform(1, 3))

@@ -149,6 +149,14 @@ class Qoo10:
 
   def close_popup(self) -> None:
     try:
+      cookie = self.driver.find_elements(By.CSS_SELECTOR, "[id^='someId']")
+      for i in cookie:
+        #remove element
+        self.driver.execute_script("arguments[0].parentNode.removeChild(arguments[0]);", i)
+        self.log('[close] cookie popup')
+    except:
+      pass
+    try:
       mobileweb = self.driver.find_element(By.ID, "btn_download_app_close")
       mobileweb.click()
       self.log('[click] close app download popup')

@@ -27,8 +27,8 @@ try:
 except:
   sys.stderr.write("webdriver-manager not installed. Automatic installation not supported.\n")
 
-timeout = 10
-timeout_mameq = 10
+timeout = 5
+timeout_mameq = 5
 
 #login
 
@@ -47,14 +47,14 @@ class Qoo10:
         self.opts.add_argument("--headless")
       self.opts.add_argument(os.path.join(os.getcwd(), datadir))
       self.opts.set_preference("intl.accept_languages", "ko-KR")
-      self.opts.set_preference("general.useragent.override", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1")
+      self.opts.set_preference("general.useragent.override", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/127.0.6533.77 Mobile/15E148 Safari/604.1")
     elif browser == 'chrome':
       self.opts = ChromeOptions()
       if headless == True:
         self.opts.add_argument("--headless")
       #self.opts.add_experimental_option('mobileEmulation', {'deviceMetrics': {'width': 390, 'height': 644, 'pixelRatio': 3.0}}) 
       self.opts.add_experimental_option('prefs', {'intl.accept_languages': 'ko,ko_KR'})
-      self.opts.add_argument("user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 16_0_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1")
+      self.opts.add_argument("user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/128.0 Mobile/15E148 Safari/605.1.15")
       self.opts.add_argument("user-data-dir={}".format(datadir))
     
     self.executable_path = executable_path
@@ -217,39 +217,41 @@ class Qoo10:
     if random_delay == True:
       time.sleep(random.uniform(0.5, 2))
 
-    if loginmethod == loginmethods.login_qoo10:
-      div = self.driver.find_element(By.CLASS_NAME, "login_type")
-      login_qoo10 = div.find_element(By.TAG_NAME, "a")
-      login_qoo10.click()
+    login_wrapper = self.driver.find_element(By.CLASS_NAME, "login-site")
 
-      if random_delay == True:
-        time.sleep(random.uniform(0.5, 1.5))
-
-      self.driver.execute_script("document.getElementById('login_id').value='{}'".format(username))
-      self.driver.execute_script("document.getElementById('id_passwd').value='{}'".format(password))
+    if loginmethod == loginmethods.login_facebook:
+      login_hint = 'facebook'
+    elif loginmethod == loginmethods.login_google:
+      login_hint = 'Google'
+    elif loginmethod == loginmethods.login_line:
+      login_hint = 'Line'
+    elif loginmethod == loginmethods.login_kakaotalk:
+      login_hint = 'Kakao'
+    elif loginmethod == loginmethods.login_apple:
+      login_hint = 'Apple'
+    elif loginmethod == loginmethods.login_tmon:
+      login_hint = 'Tmon'
+    elif loginmethod == loginmethods.login_wish:
+      login_hint = 'wish'
+    elif loginmethod == loginmethods.login_qoo10:
+      login_hint = 'Email'
+    
+    else:
       self.render_msg('Please log in.')
 
-    elif loginmethod == loginmethods.login_facebook:
-      div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
-      login = div.find_elements(By.TAG_NAME, "a")
-      login[0].click()
-    elif loginmethod == loginmethods.login_google:
-      div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
-      login = div.find_elements(By.TAG_NAME, "a")
-      login[1].click()
-    elif loginmethod == loginmethods.login_line:
-      div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
-      login = div.find_elements(By.TAG_NAME, "a")
-      login[2].click()
-    elif loginmethod == loginmethods.login_kakaotalk:
-      div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
-      login = div.find_elements(By.TAG_NAME, "a")
-      login[3].click()
-    elif loginmethod == loginmethods.login_apple:
-      div = self.driver.find_element(By.CLASS_NAME, "sns_mthd")
-      login = div.find_elements(By.TAG_NAME, "a")
-      login[4].click()
-    else:
+    lis = login_wrapper.find_elements(By.TAG_NAME, "li")
+    for li in lis:
+      if login_hint in li.get_attribute('innerHTML'):
+        button = li.find_element(By.TAG_NAME, "button")
+        button.click()
+        break
+
+    if random_delay == True:
+      time.sleep(random.uniform(0.5, 1.5))
+
+    if loginmethod == loginmethods.login_qoo10:
+      self.driver.execute_script("document.getElementById('login_id').value='{}'".format(username))
+      self.driver.execute_script("document.getElementById('passwd').value='{}'".format(password))
       self.render_msg('Please log in.')
 
     self.log('[alert] Waiting for login', error=True)
@@ -284,29 +286,53 @@ class Qoo10:
         shopping_tweets_present = EC.presence_of_element_located((By.ID, "h3_header_top_area"))
         WebDriverWait(self.driver, timeout).until(shopping_tweets_present)
       except TimeoutException:
-        self.log('[error] timeout (shopping tweets link not found)', error=True)
-        return brandmoncnt, mameqcnt
+        try:
+          shopping_tweets_present = EC.presence_of_element_located((By.ID, "tweet_area"))
+          WebDriverWait(self.driver, timeout).until(shopping_tweets_present)
+        except TimeoutException:
+          self.log('[error] timeout (shopping tweets link not found within timeout)', error=True)
+          return brandmoncnt, mameqcnt
 
       self.close_popup()
 
-      shopping_tweets = self.driver.find_element(By.ID, "h3_header_top_area")
-      shopping_link = shopping_tweets.find_element(By.CLASS_NAME, "main-tt__lnk")
       try:
-        shopping_link.click()
-        self.log('[click] shopping tweets')
-      except ElementClickInterceptedException:
-        self.log('[error] click intercepted. failed to click shopping tweets', error=True)
-        self.log('[navigate] scroll and retry')
-        self.driver.execute_script("window.scrollBy(0, 300);")
+        shopping_tweets = self.driver.find_element(By.ID, "h3_header_top_area")
+        shopping_link = shopping_tweets.find_element(By.CLASS_NAME, "main-tt__lnk")
         try:
           shopping_link.click()
           self.log('[click] shopping tweets')
         except ElementClickInterceptedException:
           self.log('[error] click intercepted. failed to click shopping tweets', error=True)
+          self.log('[navigate] scroll and retry')
+          self.driver.execute_script("window.scrollBy(0, 300);")
+          try:
+            shopping_link.click()
+            self.log('[click] shopping tweets')
+          except ElementClickInterceptedException:
+            self.log('[error] click intercepted. failed to click shopping tweets', error=True)
+          except TimeoutException:
+            self.log('[error] timeout (shopping tweets list not present after interception)', error=True)
+      except NoSuchElementException:
+        try:
+          shopping_tweets_wrapper = self.driver.find_element(By.ID, "tweet_area")
+          shopping_tweets = shopping_tweets_wrapper.find_element(By.TAG_NAME, "a")
+          shopping_tweets.click()
+          self.log('[click] shopping tweets')
+        except ElementClickInterceptedException:
+          self.log('[error] click intercepted. failed to click shopping tweets ', error=True)
+          self.log('[navigate] scroll and retry')
+          self.driver.execute_script("window.scrollBy(0, 300);")
+          try:
+            shopping_tweets.click()
+            self.log('[click] shopping tweets')
+          except TimeoutException:
+            self.log('[error] timeout (shopping tweets list not found for 2 cases after interception)', error=True)
         except TimeoutException:
-          self.log('[error] timeout (shopping tweets list not found)', error=True)
-      except TimeoutException:
-        self.log('[error] timeout (shopping tweets list not found)', error=True)
+          self.log('[error] timeout (shopping tweets list not found 2 cases)', error=True)
+        except NoSuchElementException:
+          self.log('[error] shopping tweets not found', error=True)
+          self.log('[message] switching to fallback method')
+          self.driver.get('https://' + self.locale + '/gmkt.inc/Mobile/ShoppingTweet/TimeLine.aspx?shoplog=Y')
 
       while True:
         try:

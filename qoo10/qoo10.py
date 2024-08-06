@@ -239,12 +239,13 @@ class Qoo10:
     else:
       self.render_msg('Please log in.')
 
-    lis = login_wrapper.find_elements(By.TAG_NAME, "li")
-    for li in lis:
-      if login_hint in li.get_attribute('innerHTML'):
-        button = li.find_element(By.TAG_NAME, "button")
-        button.click()
-        break
+    if loginmethod != loginmethods.login_qoo10:
+      lis = login_wrapper.find_elements(By.TAG_NAME, "li")
+      for li in lis:
+        if login_hint in li.get_attribute('innerHTML'):
+          button = li.find_element(By.TAG_NAME, "button")
+          button.click()
+          break
 
     if random_delay == True:
       time.sleep(random.uniform(0.5, 1.5))
@@ -252,6 +253,7 @@ class Qoo10:
     if loginmethod == loginmethods.login_qoo10:
       self.driver.execute_script("document.getElementById('login_id').value='{}'".format(username))
       self.driver.execute_script("document.getElementById('passwd').value='{}'".format(password))
+      self.driver.execute_script("document.getElementById('login_btn').disabled = false")
       self.render_msg('Please log in.')
 
     self.log('[alert] Waiting for login', error=True)

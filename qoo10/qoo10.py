@@ -774,13 +774,13 @@ class Qoo10:
   def attend(self, random_delay: bool=True) -> None:
     action = ActionChains(self.driver)
     links = self.driver.find_elements(By.CLASS_NAME, "swp_slide")
-    if 'wish.com' not in self.driver.current_url:
-      action.drag_and_drop_by_offset(links[4], -240, 0).perform()
-      if random_delay == True:
-        time.sleep(random.uniform(0.3, 0.8))
-      action.drag_and_drop_by_offset(links[8], -240, 0).perform()
-      if random_delay == True:
-        time.sleep(random.uniform(0.3, 0.8))
+    # if 'wish.com' not in self.driver.current_url:
+    #   action.drag_and_drop_by_offset(links[4], -240, 0).perform()
+    #   if random_delay == True:
+    #     time.sleep(random.uniform(0.3, 0.8))
+    #   action.drag_and_drop_by_offset(links[8], -240, 0).perform()
+    #   if random_delay == True:
+    #     time.sleep(random.uniform(0.3, 0.8))
     for i in links:
       a = i.find_element(By.TAG_NAME, "a")
       href = a.get_attribute('href')
